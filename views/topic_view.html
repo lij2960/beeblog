@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{template "header"}}
+    <title>{{.Topic.Title}} - 我的 beego 博客</title>
+</head>
+<body>
+{{template "navbar" .}}
+<div class="container">
+    <h1>{{.Topic.Title}}<a href="/topic/modify?id={{.Id}}" class="btn btn-default">编辑</a></h1>
+    {{.Topic.Content}}
+</div>
+</body>
+</html>

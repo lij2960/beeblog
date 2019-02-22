@@ -14,6 +14,9 @@ func init()  {
 func main() {
 	orm.Debug = true
 	orm.RunSyncdb("default", false, true)
+	/**
+	此处与视频不一致，routers放入routers目录
+	 */
 	beego.Run()
 }
 
