@@ -29,6 +29,7 @@ type Topic struct {
 	Id              int64
 	Uid             int64
 	Title           string
+	Category        string
 	Content         string `orm:"size(5000)"`
 	Attachment      string
 	Created         time.Time `orm:"index"`
@@ -40,14 +41,38 @@ type Topic struct {
 	ReplyLastUserId int
 }
 
+type Comment struct {
+	Id      int64
+	Tid     int64
+	Nickname    string
+	Content string    `orm:"size(1000)"`
+	Created time.Time `orm:"index"`
+}
+
 func RegisterDB() {
 	if !com.IsExist(_DB_NAME) {
 		os.MkdirAll(path.Dir(_DB_NAME), os.ModePerm)
 		os.Create(_DB_NAME)
 	}
-	orm.RegisterModel(new(Category), new(Topic))
+	orm.RegisterModel(new(Category), new(Topic), new(Comment))
 	orm.RegisterDriver(_SQLITE_DRIVER, orm.DRSqlite)
 	orm.RegisterDataBase("default", _SQLITE_DRIVER, _DB_NAME, 10)
+}
+
+func AddReply(tid, nickname, content string) error {
+	tidInt, err := strconv.ParseInt(tid, 10, 64)
+	if err != nil {
+		return err
+	}
+	o := orm.NewOrm()
+	comment := &Comment{
+		Tid: tidInt,
+		Nickname:nickname,
+		Content:content,
+		Created:time.Now(),
+	}
+	_, err = o.Insert(comment)
+	return err
 }
 
 func AddCategory(name string) error {
@@ -56,8 +81,8 @@ func AddCategory(name string) error {
 	此处与视频不同，设置了索引，则字段不能为空，不知道是不是版本的原因
 	 */
 	cate := &Category{
-		Title: name,
-		Created: time.Now(),
+		Title:     name,
+		Created:   time.Now(),
 		TopicTime: time.Now(),
 	}
 	qs := o.QueryTable("category")
@@ -80,12 +105,27 @@ func GetAllCategories() ([]*Category, error) {
 	return cates, err
 }
 
-func GetAllTopics(isDesc bool) ([]*Topic, error) {
+func GetAllComments(tid string) ([]*Comment, error) {
+	tidInt, err := strconv.ParseInt(tid, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	o := orm.NewOrm()
+	comments := make([]*Comment, 0)
+	qs := o.QueryTable("comment")
+	_, err = qs.Filter("tid", tidInt).All(&comments)
+	return comments, err
+}
+
+func GetAllTopics(cate string, isDesc bool) ([]*Topic, error) {
 	o := orm.NewOrm()
 	topics := make([]*Topic, 0)
 	qs := o.QueryTable("topic")
 	var err error
 	if isDesc {
+		if len(cate) > 0 {
+			qs = qs.Filter("category", cate)
+		}
 		_, err = qs.OrderBy("-created").All(&topics)
 	} else {
 		_, err = qs.All(&topics)
@@ -110,8 +150,19 @@ func DeleteTopic(id string) error {
 		return err
 	}
 	o := orm.NewOrm()
-	topic := &Topic{Id:tid}
+	topic := &Topic{Id: tid}
 	_, err = o.Delete(topic)
+	return err
+}
+
+func DeleteComment(rid string) error {
+	ridInt, err := strconv.ParseInt(rid, 10, 64)
+	if err != nil {
+		return err
+	}
+	o := orm.NewOrm()
+	comment := &Comment{Id:ridInt}
+	_, err = o.Delete(comment)
 	return err
 }
 
@@ -133,28 +184,30 @@ func GetTopic(id string) (*Topic, error) {
 	return topic, err
 }
 
-func AddTopic(title, content string) error {
+func AddTopic(title, category, content string) error {
 	o := orm.NewOrm()
 	topic := &Topic{
-		Title:title,
-		Content:content,
-		Created:time.Now(),
-		Update:time.Now(),
-		ReplyTime:time.Now(),
+		Title:     title,
+		Category:  category,
+		Content:   content,
+		Created:   time.Now(),
+		Update:    time.Now(),
+		ReplyTime: time.Now(),
 	}
 	_, err := o.Insert(topic)
 	return err
 }
 
-func ModifyTopic(id, title, content string) error {
+func ModifyTopic(id, title, category, content string) error {
 	tid, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return err
 	}
 	o := orm.NewOrm()
-	topic := &Topic{Id:tid}
+	topic := &Topic{Id: tid}
 	if o.Read(topic) == nil {
 		topic.Title = title
+		topic.Category = category
 		topic.Content = content
 		topic.Update = time.Now()
 		o.Update(topic)

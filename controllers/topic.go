@@ -13,7 +13,7 @@ func (c *TopicController) Get() {
 	var err error
 	c.Data["IsTopic"] = true
 	c.Data["IsLogin"] = checkAccount(c.Ctx)
-	c.Data["Topics"], err = models.GetAllTopics(false)
+	c.Data["Topics"], err = models.GetAllTopics("", false)
 	if err != nil {
 		beego.Error(err)
 	}
@@ -33,12 +33,13 @@ func (c *TopicController) Post() {
 	title := c.Input().Get("title")
 	content := c.Input().Get("content")
 	id := c.Input().Get("id")
+	category := c.Input().Get("category")
 
 	var err error
 	if len(id) == 0 {
-		err = models.AddTopic(title, content)
+		err = models.AddTopic(title, category, content)
 	} else {
-		err = models.ModifyTopic(id, title, content)
+		err = models.ModifyTopic(id, title, category, content)
 	}
 	if err != nil {
 		beego.Error(err)
@@ -53,8 +54,16 @@ func (c *TopicController) View() {
 		c.Redirect("/", 302)
 		return
 	}
+	tid := c.Ctx.Input.Param("0")
+	comments, err := models.GetAllComments(tid)
+	if err != nil {
+		beego.Error(err)
+		return
+	}
 	c.Data["Topic"] = topic
-	c.Data["Id"] = c.Ctx.Input.Param("0")
+	c.Data["Id"] = tid
+	c.Data["Comments"] = comments
+	c.Data["IsLogin"] = checkAccount(c.Ctx)
 	c.TplName = "topic_view.html"
 }
 

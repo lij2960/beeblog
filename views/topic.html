@@ -28,7 +28,10 @@
             <th>{{.Update}}</th>
             <th>{{.Views}}</th>
             <th>{{.ReplyCount}}</th>
-            <th><a href="/topic/delete?id={{.Id}}">删除</a></th>
+            <th>
+                <a href="/topic/modify?id={{.Id}}">编辑</a>
+                <a href="/topic/delete?id={{.Id}}">删除</a>
+            </th>
         </tr>
         {{end}}
         </tbody>
