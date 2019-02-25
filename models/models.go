@@ -141,7 +141,7 @@ func GetAllTopics(cate, label string, isDesc bool) ([]*Topic, error) {
 			qs = qs.Filter("category", cate)
 		}
 		if len(label) > 0 {
-			qs = qs.Filter("labels__contains", "$" + label + "#")
+			qs = qs.Filter("labels__contains", "$"+label+"#")
 		}
 		_, err = qs.OrderBy("-created").All(&topics)
 	} else {
@@ -239,19 +239,20 @@ func GetTopic(id string) (*Topic, error) {
 	return topic, err
 }
 
-func AddTopic(title, category, label, content string) error {
+func AddTopic(title, category, label, content, attachment string) error {
 	//处理标签
 	label = "$" + strings.Join(
 		strings.Split(label, " "), "#$") + "#"
 	o := orm.NewOrm()
 	topic := &Topic{
-		Title:     title,
-		Category:  category,
-		Labels:    label,
-		Content:   content,
-		Created:   time.Now(),
-		Update:    time.Now(),
-		ReplyTime: time.Now(),
+		Title:      title,
+		Category:   category,
+		Labels:     label,
+		Content:    content,
+		Attachment: attachment,
+		Created:    time.Now(),
+		Update:     time.Now(),
+		ReplyTime:  time.Now(),
 	}
 	_, err := o.Insert(topic)
 	if err != nil {
@@ -268,22 +269,24 @@ func AddTopic(title, category, label, content string) error {
 	return err
 }
 
-func ModifyTopic(id, title, category, label, content string) error {
+func ModifyTopic(id, title, category, label, content, attachment string) error {
 	label = "$" + strings.Join(
 		strings.Split(label, " "), "#$") + "#"
 	tid, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {
 		return err
 	}
-	var oldCate string
+	var oldCate, oldAttach string
 	o := orm.NewOrm()
 	topic := &Topic{Id: tid}
 	if o.Read(topic) == nil {
 		oldCate = topic.Category
+		oldAttach = topic.Attachment
 		topic.Title = title
 		topic.Category = category
 		topic.Labels = label
 		topic.Content = content
+		topic.Attachment = attachment
 		topic.Update = time.Now()
 		_, err = o.Update(topic)
 		if err != nil {
@@ -300,6 +303,12 @@ func ModifyTopic(id, title, category, label, content string) error {
 			_, err = o.Update(cate)
 		}
 	}
+
+	//删除旧的附件
+	if len(oldAttach) > 0 {
+		os.Remove(path.Join("attachment", oldAttach))
+	}
+
 	cate := new(Category)
 	qs := o.QueryTable("category")
 	err = qs.Filter("title", category).One(cate)

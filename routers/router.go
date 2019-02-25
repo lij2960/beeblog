@@ -15,4 +15,8 @@ func init() {
     beego.Router("/reply/delete", &controllers.ReplyController{}, "get:Delete")
     //自动路由
     beego.AutoRouter(&controllers.TopicController{})
+	//作为静态文件
+	//beego.SetStaticPath("/attachment", "attachment")
+	//作为单独一个控制器来处理
+	beego.Router("/attachment/:all", &controllers.AttachController{})
 }
