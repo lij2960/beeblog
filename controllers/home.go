@@ -17,7 +17,7 @@ func (c *HomeController) Get() {
 	if err != nil {
 		beego.Error(err)
 	}
-	c.Data["Topics"], err = models.GetAllTopics(c.Input().Get("cate"), true)
+	c.Data["Topics"], err = models.GetAllTopics(c.Input().Get("cate"), c.Input().Get("label"), true)
 	if err != nil {
 		beego.Error(err)
 	}

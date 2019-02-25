@@ -7,8 +7,16 @@
 <body>
 {{template "navbar" .}}
 <div class="container">
-    <h1>{{.Topic.Title}}<a href="/topic/modify?id={{.Id}}" class="btn btn-default">编辑</a></h1>
-    {{.Topic.Content}}
+    {{$label := .Labels}}
+    {{with .Topic}}
+    <h1>{{.Title}} <small>{{.Category}}</small> <a href="/topic/modify?id={{.Id}}" class="btn btn-default">编辑</a></h1>
+    <h5>
+        {{range $label}}
+        <a href="/?label={{.}}">{{.}}</a>
+        {{end}}
+    </h5>
+    {{.Content}}
+    {{end}}
 </div>
 <div class="container">
     {{$isLogin := .IsLogin}}
