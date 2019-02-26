@@ -6,4 +6,5 @@
 go get github.com/astaxie/beego/orm
 go get github.com/unknwon/com
 go get github.com/mattn/go-sqlite3
+go get github.com/beego/i18n
 ```

@@ -3,10 +3,26 @@ package controllers
 import (
 	"beeblog/models"
 	"github.com/astaxie/beego"
+	"github.com/beego/i18n"
 )
 
-type HomeController struct {
+type baseController struct {
 	beego.Controller
+	i18n.Locale
+}
+
+func (c *baseController) Prepare() {
+	lang := c.GetString("lang")
+	if lang == "zh-CN" {
+		c.Lang = lang
+	} else {
+		c.Lang = "en-US"
+	}
+	c.Data["Lang"] = c.Lang
+}
+
+type HomeController struct {
+	baseController
 }
 
 func (c *HomeController) Get() {
@@ -21,5 +37,9 @@ func (c *HomeController) Get() {
 	if err != nil {
 		beego.Error(err)
 	}
+
+	c.Data["Hi"] = c.Tr("hi")
+	c.Data["Bye"] = c.Tr("bye")
+	c.Data["About"] = "about"
 	c.TplName = "home.html"
 }

@@ -24,6 +24,17 @@
       {{end}}
     </ul>
   </div>
+  <div class="col-md-3">
+    <h3>i18n</h3>
+    <ul>
+      <li>{{.Hi}}</li>
+      <li>{{.Bye}}</li>
+      <li>{{i18n .Lang .Hi}}</li>
+      <li>{{i18n .Lang .Bye}}</li>
+      <li>{{i18n .Lang .About}}</li>
+      <li>{{i18n .Lang "about.about"}}</li>
+    </ul>
+  </div>
 </div>
 <script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
 <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>

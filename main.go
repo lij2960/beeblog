@@ -5,6 +5,7 @@ import (
 	_ "beeblog/routers"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/beego/i18n"
 	"os"
 )
 
@@ -20,6 +21,9 @@ func main() {
 	 */
 	//创建附件目录
 	os.Mkdir("attachment", os.ModePerm)
+	i18n.SetMessage("en-US", "conf/locale_en-US.ini")
+	i18n.SetMessage("zh-CN", "conf/locale_zh-CN.ini")
+	beego.AddFuncMap("i18n", i18n.Tr)
 	beego.Run()
 }
 
